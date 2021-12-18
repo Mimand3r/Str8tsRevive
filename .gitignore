@@ -1,2 +1,5 @@
 *.suo
-/bin/
+bin/
+obj/
+Debug/
+Release/
