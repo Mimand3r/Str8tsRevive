@@ -20,7 +20,7 @@ namespace Str8tsGenerationProject
             InitializeComponent();      
         }
 
-        private String selectedFile = null;
+        private JSONBoard jsonBoard = null;
 
         private void button_import_Click(object sender, EventArgs e)
         {
@@ -32,26 +32,25 @@ namespace Str8tsGenerationProject
 
             if (openFileDialog1.ShowDialog() != DialogResult.OK) return;
 
-            selectedFile = openFileDialog1.FileName;
+            var selectedFile = openFileDialog1.FileName;
             if (!File.Exists(selectedFile)) return;
             
             var title = selectedFile.Split('\\').Last();
             var fileData = File.ReadAllText(selectedFile);
-            var jsonBoard = JsonConvert.DeserializeObject<JSONBoard>(fileData);
+            this.jsonBoard = JsonConvert.DeserializeObject<JSONBoard>(fileData);
             label1.Text = title;
         }
 
         private void button_draw_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrEmpty(selectedFile)) return;
+            if (jsonBoard == null) return;
+            if (jsonBoard.cells.Count != jsonBoard.size * jsonBoard.size) return;
 
-            // Create 9x9 Cell Array
-            for (int i = 0; i < 9; i++)
+            for (int i = 0; i < jsonBoard.size; i++)
             {
-                for (int j = 0; j < 9; j++)
+                for (int j = 0; j < jsonBoard.size; j++)
                 {
-                    var newEl = new Zelle();
-                    newEl.Location = new Point(i * 40, j * 40);
+                    var newEl = new Zelle(new Point(j * 40, i * 40), jsonBoard.cells[i*jsonBoard.size + j]);
                     this.Controls.Add(newEl);
                 }
             }

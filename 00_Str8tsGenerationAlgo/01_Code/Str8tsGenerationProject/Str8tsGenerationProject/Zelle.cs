@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Str8tsGenerationProject.JSON;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -12,16 +13,31 @@ namespace Str8tsGenerationProject
 {
     public partial class Zelle : UserControl
     {
-        public Zelle()
+        public Zelle(Point location, JSONBoardCell jsonBoardCell)
         {
             InitializeComponent();
+            this.Location = location;
+            this.jsonBoardCell = jsonBoardCell;
+            setZahl(jsonBoardCell.number);
+            setType(jsonBoardCell.type);
         }
 
+        private JSONBoardCell jsonBoardCell;
+
         [Category("Zelle"), Description("A property that controls the wossname")]
-        public int Zahl
+        private void setZahl(int zahl)
         {
-            get { return int.Parse(label1.Text); }
-            set { label1.Text = value.ToString(); }
+            label1.Text = zahl.ToString();
+        }
+
+        private void setType(string type)
+        {
+            if (type == "standard")
+                panel1.BackColor = Color.White;
+            else if (type == "block")
+                panel1.BackColor = ColorTranslator.FromHtml("#888888");
+            else
+                throw new Exception("Fehler in JSON");
         }
     }
 }
