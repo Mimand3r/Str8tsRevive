@@ -1,8 +1,11 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Str8tsGenerationProject.JSON;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,9 +17,7 @@ namespace Str8tsGenerationProject
     {
         public Form1()
         {
-            InitializeComponent();
-
-         
+            InitializeComponent();      
         }
 
         private String selectedFile = null;
@@ -29,11 +30,15 @@ namespace Str8tsGenerationProject
             openFileDialog1.FilterIndex = 0;
             openFileDialog1.RestoreDirectory = true;
 
-            if (openFileDialog1.ShowDialog() == DialogResult.OK)
-            {
-                selectedFile = openFileDialog1.FileName;
-                label1.Text = selectedFile.Split('\\').Last();
-            }
+            if (openFileDialog1.ShowDialog() != DialogResult.OK) return;
+
+            selectedFile = openFileDialog1.FileName;
+            if (!File.Exists(selectedFile)) return;
+            
+            var title = selectedFile.Split('\\').Last();
+            var fileData = File.ReadAllText(selectedFile);
+            var jsonBoard = JsonConvert.DeserializeObject<JSONBoard>(fileData);
+            label1.Text = title;
         }
 
         private void button_draw_Click(object sender, EventArgs e)
