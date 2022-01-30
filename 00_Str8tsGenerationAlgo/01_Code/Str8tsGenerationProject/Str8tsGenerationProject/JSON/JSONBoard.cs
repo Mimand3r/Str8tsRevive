@@ -9,7 +9,7 @@ namespace Str8tsGenerationProject.JSON
     public class JSONBoard
     {
         public int size { get; set; }
-        public IList<JSONBoardCell> cells { get; set; }
+        public List<JSONBoardCell> cells { get; set; } = new List<JSONBoardCell>();
     }
 
     public class JSONBoardCell

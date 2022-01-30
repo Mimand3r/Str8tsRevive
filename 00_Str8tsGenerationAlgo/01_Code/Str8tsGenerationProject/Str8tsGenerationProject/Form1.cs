@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Str8tsGenerationProject.JSON;
+using Str8tsGenerationProject.Pages;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -17,43 +18,20 @@ namespace Str8tsGenerationProject
     {
         public Form1()
         {
-            InitializeComponent();      
-        }
-
-        private JSONBoard jsonBoard = null;
-
-        private void button_import_Click(object sender, EventArgs e)
-        {
-            var openFileDialog1 = new OpenFileDialog();
-
-            openFileDialog1.Filter = "JSON files (*.json)|*.json;";
-            openFileDialog1.FilterIndex = 0;
-            openFileDialog1.RestoreDirectory = true;
-
-            if (openFileDialog1.ShowDialog() != DialogResult.OK) return;
-
-            var selectedFile = openFileDialog1.FileName;
-            if (!File.Exists(selectedFile)) return;
+            InitializeComponent();
             
-            var title = selectedFile.Split('\\').Last();
-            var fileData = File.ReadAllText(selectedFile);
-            this.jsonBoard = JsonConvert.DeserializeObject<JSONBoard>(fileData);
-            label1.Text = title;
-        }
+            tab_control.TabPages.Clear();
+            
+            var page1 = new TabPage("Import & Display");
+            var ImportAndDisplayPage = new Page_Import_And_Display();
+            ImportAndDisplayPage.Parent = page1;
 
-        private void button_draw_Click(object sender, EventArgs e)
-        {
-            if (jsonBoard == null) return;
-            if (jsonBoard.cells.Count != jsonBoard.size * jsonBoard.size) return;
+            var page2 = new TabPage("Manual Board Creation");
+            var manual_board_creation_page = new Page_Manual_Board_Creation();
+            manual_board_creation_page.Parent = page2;
 
-            for (int i = 0; i < jsonBoard.size; i++)
-            {
-                for (int j = 0; j < jsonBoard.size; j++)
-                {
-                    var newEl = new Zelle(new Point(j * 40, i * 40), jsonBoard.cells[i*jsonBoard.size + j]);
-                    this.Controls.Add(newEl);
-                }
-            }
+            tab_control.TabPages.Add(page1);
+            tab_control.TabPages.Add(page2);
         }
     }
 }
