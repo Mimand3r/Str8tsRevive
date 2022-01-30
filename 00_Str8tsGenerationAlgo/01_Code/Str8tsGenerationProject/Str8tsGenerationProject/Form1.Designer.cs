@@ -29,60 +29,70 @@ namespace Str8tsGenerationProject
         /// </summary>
         private void InitializeComponent()
         {
-            this.button_import = new System.Windows.Forms.Button();
-            this.label1 = new System.Windows.Forms.Label();
-            this.button_draw = new System.Windows.Forms.Button();
+            this.page_panel = new System.Windows.Forms.Panel();
+            this.tab_control = new System.Windows.Forms.TabControl();
+            this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.tab_control.SuspendLayout();
             this.SuspendLayout();
             // 
-            // button_import
+            // page_panel
             // 
-            this.button_import.Location = new System.Drawing.Point(751, 31);
-            this.button_import.Name = "button_import";
-            this.button_import.Size = new System.Drawing.Size(75, 23);
-            this.button_import.TabIndex = 0;
-            this.button_import.Text = "Import";
-            this.button_import.UseVisualStyleBackColor = true;
-            this.button_import.Click += new System.EventHandler(this.button_import_Click);
+            this.page_panel.Location = new System.Drawing.Point(102, 122);
+            this.page_panel.Name = "page_panel";
+            this.page_panel.Size = new System.Drawing.Size(810, 492);
+            this.page_panel.TabIndex = 0;
             // 
-            // label1
+            // tab_control
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(771, 15);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(33, 13);
-            this.label1.TabIndex = 1;
-            this.label1.Text = "keine";
+            this.tab_control.Controls.Add(this.tabPage1);
+            this.tab_control.Controls.Add(this.tabPage2);
+            this.tab_control.Location = new System.Drawing.Point(12, 12);
+            this.tab_control.Name = "tab_control";
+            this.tab_control.SelectedIndex = 0;
+            this.tab_control.Size = new System.Drawing.Size(969, 632);
+            this.tab_control.TabIndex = 2;
             // 
-            // button_draw
+            // tabPage1
             // 
-            this.button_draw.Location = new System.Drawing.Point(751, 70);
-            this.button_draw.Name = "button_draw";
-            this.button_draw.Size = new System.Drawing.Size(75, 23);
-            this.button_draw.TabIndex = 2;
-            this.button_draw.Text = "Draw";
-            this.button_draw.UseVisualStyleBackColor = true;
-            this.button_draw.Click += new System.EventHandler(this.button_draw_Click);
+            this.tabPage1.Location = new System.Drawing.Point(4, 22);
+            this.tabPage1.Name = "tabPage1";
+            this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage1.Size = new System.Drawing.Size(961, 606);
+            this.tabPage1.TabIndex = 0;
+            this.tabPage1.Text = "tabPage1";
+            this.tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // tabPage2
+            // 
+            this.tabPage2.Location = new System.Drawing.Point(4, 22);
+            this.tabPage2.Name = "tabPage2";
+            this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage2.Size = new System.Drawing.Size(192, 74);
+            this.tabPage2.TabIndex = 1;
+            this.tabPage2.Text = "tabPage2";
+            this.tabPage2.UseVisualStyleBackColor = true;
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(923, 607);
-            this.Controls.Add(this.button_draw);
-            this.Controls.Add(this.label1);
-            this.Controls.Add(this.button_import);
+            this.ClientSize = new System.Drawing.Size(1008, 655);
+            this.Controls.Add(this.tab_control);
+            this.Controls.Add(this.page_panel);
             this.Name = "Form1";
             this.Text = "Form1";
+            this.tab_control.ResumeLayout(false);
             this.ResumeLayout(false);
-            this.PerformLayout();
 
         }
 
         #endregion
 
-        private System.Windows.Forms.Button button_import;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Button button_draw;
+        private System.Windows.Forms.Panel page_panel;
+        private System.Windows.Forms.TabControl tab_control;
+        private System.Windows.Forms.TabPage tabPage1;
+        private System.Windows.Forms.TabPage tabPage2;
     }
 }
 
