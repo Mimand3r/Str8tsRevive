@@ -30,8 +30,13 @@ namespace Str8tsGenerationProject
             var manual_board_creation_page = new Page_Manual_Board_Creation();
             manual_board_creation_page.Parent = page2;
 
+            var page3 = new TabPage("Board Solver");
+            var solve_board_page = new Page_Solve_Board();
+            solve_board_page.Parent = page3;
+
             tab_control.TabPages.Add(page1);
             tab_control.TabPages.Add(page2);
+            tab_control.TabPages.Add(page3);
         }
     }
 }
