@@ -51,10 +51,23 @@ namespace Str8tsGenerationProject.SolvingAlgorithm
                         solver_board.RecalculateAllStr8tePossibilities();
 
                         /// Als nächstes werden die Cell Possible-Values neu kalkuliert/reduziert
-                        /// zuerst werden alle Possible-Values gestrichen, die in Row oder Col bereits benutzt werden
-                        /// dann werden alle Possible-Values gestrichen, die in CannotInclude von einem der beiden Cell-Str8tes auftauchen oder außerhalb aller Range options für eine der Str8tes liegen
+                        /// zuerst werden alle Possible-Values gestrichen, die in Row oder Col bereits benutzt werden (nicht nötig wenn cannot includes der beiden str8tes ausgewertet werden)
+                        /// dann werden alle Possible-Values gestrichen, die in CannotInclude von einem der beiden Cell-Str8tes auftauchen, die in Already Includes auftauchen oder außerhalb aller Range options für eine der Str8tes liegen
                         solver_board.RecalculateAllCellPossibilities();
 
+
+                        /// Manchmal gibt es row-wise oder col-wise Paare
+                        /// Paare sind dependent cells deren optionen gleich sind. Ist die Anzahl der Paar Elemente gleich der geteilten Optionslänge so bilden diese Elemente ein Paar
+                        /// Paare entfernen ihre Optionen bei allen anderen Cell Elementen in der gesamten Row/Col Str8te übergreifend
+                        /// Hierbei können neue cannot include entrys & must include entrys für die beteiligten Str8tes entstehen. Wann immer das passiert, muss der solving step neu gestartet werden
+                        var anyStr8teGotNewEntrys = solver_board.CollapseCellOptionsIfPaarelementeExist();
+                        if (anyStr8teGotNewEntrys)
+                            continue; /// paare können cells aber auch str8tes (mustinclude/cannotinclude) verändern. Gab es eine str8te-Veränderung, so müssen die possibilities neu calculated werden. daher erfolgt ein solving step restart
+
+                        /// Manchmal gibt es must-includes in Str8tes die nur eine der Zellen erfüllen kann (Hero Zellen).
+                        /// Für eine solche Hero Zelle kollabieren alle anderen Optionen und sie erfüllt ihre Hero Rolle
+                        /// Dieses Szenario wird hier abgehandelt und reduziert die Cell Options im Falle einer HeroCell auf 1 Element
+                        solver_board.CollapseCellOptionsForMustIncludeHeroCells();
                     }
                     catch (NoSolutionException e)
                     {
@@ -63,10 +76,8 @@ namespace Str8tsGenerationProject.SolvingAlgorithm
                         throw e;
                     }
 
-                    /// Manchmal gibt es must-includes in Str8tes die nur eine der Zellen erfüllen kann (Hero Zellen).
-                    /// Für eine solche Hero Zelle kollabieren alle anderen Optionen und sie erfüllt ihre Hero Rolle
-                    /// Dieses Szenario wird hier abgehandelt und reduziert die Cell Options in dem Fall auf 1 Element
-                    //solver_board.CollapseOptionsForMustIncludeHeroCells();
+
+
 
                     /// Das Solving Step Possibility Matrix sollte an dieser Stelle ins Solving Log aufgenommen werden
 
