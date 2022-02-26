@@ -105,7 +105,9 @@
     <Compile Include="SolvingAlgorithm\MainSolver.cs" />
     <Compile Include="SolvingAlgorithm\SolvingUtils.cs" />
     <Compile Include="SolvingAlgorithm\Types\SolverBoard.cs" />
+    <Compile Include="SolvingAlgorithm\Types\SolverCell.cs" />
     <Compile Include="SolvingAlgorithm\Types\SolvingResult.cs" />
+    <Compile Include="SolvingAlgorithm\Types\Str8te.cs" />
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>
