@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace Str8tsGenerationProject.SolvingAlgorithm
 {
-    public static class Utils
+    internal static class Utils
     {
-        public static bool IntListsAreEqual(this List<int> first_list, List<int> second_list)
+        internal static bool IntListsAreEqual(this List<int> first_list, List<int> second_list)
         {
             if (first_list.Count != second_list.Count) return false;
 

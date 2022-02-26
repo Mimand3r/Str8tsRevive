@@ -9,9 +9,9 @@ using System.Threading.Tasks;
 
 namespace Str8tsGenerationProject.SolvingAlgorithm
 {
-    public static class SolvingAlgorithms
+    internal static class SolvingAlgorithms
     {
-        public static void CreateCleanStraightsLayout(this SolverBoard board)
+        internal static void CreateCleanStraightsLayout(this SolverBoard board)
         {
 
             board.horizontal_str8tes = new List<Str8te>();
@@ -110,7 +110,7 @@ namespace Str8tsGenerationProject.SolvingAlgorithm
             }
         }
 
-        public static void RecalculateAllStr8tePossibilities(this SolverBoard board)
+        internal static void RecalculateAllStr8tePossibilities(this SolverBoard board)
         {
             // Possibilities werden immer Row/Col Weise kalkuliert da sister str8te längen eine große rolle für die ranges spielen
             for (int i = 0; i < board.size; i++)
@@ -126,7 +126,7 @@ namespace Str8tsGenerationProject.SolvingAlgorithm
         }
 
         // Diese Funktion soll für jede str8te die Anzahl an Possibilities setzen
-        public static void calcAllStratePossibilitiesForRowCol(List<Str8te> sibblingStrates, int anzahl_blocks, int boardSize)
+        internal static void calcAllStratePossibilitiesForRowCol(List<Str8te> sibblingStrates, int anzahl_blocks, int boardSize)
         {
             List<Str8te> readyStrates = new List<Str8te>();
             List<Str8te> unreadyStrates = new List<Str8te>();
@@ -182,7 +182,7 @@ namespace Str8tsGenerationProject.SolvingAlgorithm
                 throw new NoSolutionException();
         }
 
-        public static void RecalculateAllCellPossibilities(this SolverBoard board)
+        internal static void RecalculateAllCellPossibilities(this SolverBoard board)
         {
             /// Iterate over every unsolved Cell.
             /// Check the both str8tes the cell is part of, exclude CannotInclude values from cell possiblities & also exclude alreadyincludes
@@ -232,7 +232,7 @@ namespace Str8tsGenerationProject.SolvingAlgorithm
         }
 
         // Function returns true if paare triggered mustInclude or cannotInclude entrys in any str8te
-        public static bool CollapseCellOptionsIfPaarelementeExist(this SolverBoard board)
+        internal static bool CollapseCellOptionsIfPaarelementeExist(this SolverBoard board)
         {
             var needs_solving_step_restart = false;
 
@@ -346,7 +346,7 @@ namespace Str8tsGenerationProject.SolvingAlgorithm
             return made_entry;
         }
 
-        public static void CollapseCellOptionsForMustIncludeHeroCells(this SolverBoard board)
+        internal static void CollapseCellOptionsForMustIncludeHeroCells(this SolverBoard board)
         {
             var all_str8tes = new List<Str8te>();
             all_str8tes.AddRange(board.vertical_str8tes);
