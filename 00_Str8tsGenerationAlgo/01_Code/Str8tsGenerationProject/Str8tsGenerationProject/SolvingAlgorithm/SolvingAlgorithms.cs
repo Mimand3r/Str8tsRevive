@@ -17,17 +17,21 @@ namespace Str8tsGenerationProject.SolvingAlgorithm
             board.horizontal_str8tes = new List<Str8te>();
             board.vertical_str8tes = new List<Str8te>();
 
+            var ind = 0;
             for (int i = 0; i < board.size; i++)
             {
                 var rowCells = board.Cells.Where(x => x.row_pos == i).ToList();
-                var strats = ExtractStr8tsFromRowOrCol(rowCells, i, Str8teType.horizontal);
+                var strats = ExtractStr8tsFromRowOrCol(rowCells, ind, Str8teType.horizontal);
+                ind += strats.Count;
                 board.horizontal_str8tes.AddRange(strats);
             }
 
+            ind = 0;
             for (int i = 0; i < board.size; i++)
             {
                 var collCells = board.Cells.Where(x => x.col_pos == i).ToList();
-                var strats = ExtractStr8tsFromRowOrCol(collCells, i, Str8teType.vertical);
+                var strats = ExtractStr8tsFromRowOrCol(collCells, ind, Str8teType.vertical);
+                ind += strats.Count;
                 board.vertical_str8tes.AddRange(strats);
             }
 
@@ -44,12 +48,12 @@ namespace Str8tsGenerationProject.SolvingAlgorithm
                         if (temp_cell_speicher.Count == 0) continue; // tritt auf wenn erstes Element block ist
                         var newStrate_ = new Str8te
                         {
-                            index = index,
+                            index = index++,
                             row_start = temp_cell_speicher[0].row_pos,
                             col_start = temp_cell_speicher[0].col_pos,
                             str8teType = type,
                             length = temp_cell_speicher.Count,
-                            AlreadyIncludes = cells.Where(x => x.value > 0).Select(x => x.value).ToList(),
+                            AlreadyIncludes = temp_cell_speicher.Where(x => x.value > 0).Select(x => x.value).ToList(),
                         };
                         newStrate_.Cells.AddRange(temp_cell_speicher);
                         newStrate_.CannotInclude.AddRange(block_values);
@@ -67,12 +71,12 @@ namespace Str8tsGenerationProject.SolvingAlgorithm
                 {
                     var newStrate_ = new Str8te
                     {
-                        index = index,
+                        index = index++,
                         row_start = temp_cell_speicher[0].row_pos,
                         col_start = temp_cell_speicher[0].col_pos,
                         str8teType = type,
                         length = temp_cell_speicher.Count,
-                        AlreadyIncludes = cells.Where(x => x.value > 0).Select(x => x.value).ToList(),
+                        AlreadyIncludes = temp_cell_speicher.Where(x => x.value > 0).Select(x => x.value).ToList(),
                     };
                     newStrate_.Cells.AddRange(temp_cell_speicher);
                     newStrate_.CannotInclude.AddRange(block_values);
@@ -115,11 +119,11 @@ namespace Str8tsGenerationProject.SolvingAlgorithm
             // Possibilities werden immer Row/Col Weise kalkuliert da sister str8te längen eine große rolle für die ranges spielen
             for (int i = 0; i < board.size; i++)
             {
-                var row_strates = board.horizontal_str8tes.Where(x => x.index == i).ToList();
+                var row_strates = board.horizontal_str8tes.Where(x => x.row_start == i).ToList();
                 var anzahl_blocks_1 = board.Cells.Where(x => x.col_pos == i).ToList().Count;
                 calcAllStratePossibilitiesForRowCol(row_strates, anzahl_blocks_1, board.size);
 
-                var col_strates = board.vertical_str8tes.Where(x => x.index == i).ToList();
+                var col_strates = board.vertical_str8tes.Where(x => x.col_start == i).ToList();
                 var anzahl_blocks_2 = board.Cells.Where(x => x.row_pos == i).ToList().Count;
                 calcAllStratePossibilitiesForRowCol(col_strates, anzahl_blocks_2, board.size);
             }
@@ -149,6 +153,9 @@ namespace Str8tsGenerationProject.SolvingAlgorithm
                         continue;
                     var includesAllRequiredElements = longestUnreadyStrate.AlreadyIncludes.All(x => newPotentialRange.isInRange(x));
                     if (!includesAllRequiredElements) // Never add Ranges which do not include full alreadyInclude List
+                        continue;
+                    var range_is_forbidden = longestUnreadyStrate.ForbiddenPossibilities.Any(forb_poss => forb_poss.isSimilarTo(newPotentialRange));
+                    if (range_is_forbidden) // Ranges can be marked as forbidden because it wouldnt match cross-str8te ranges. if that is the case, never add those ranges
                         continue;
 
                     longestUnreadyStrate.Possibilities.Add(newPotentialRange);
@@ -231,6 +238,67 @@ namespace Str8tsGenerationProject.SolvingAlgorithm
             }
         }
 
+        // Function returns true if any str8te got changes due to cross dependencies. in that case a solving step repetition is required
+        internal static bool ResolveCrossDependencies(this SolverBoard board)
+        {
+            var all_str8tes = new List<Str8te>();
+            all_str8tes.AddRange(board.horizontal_str8tes);
+            all_str8tes.AddRange(board.vertical_str8tes);
+
+            var changes_were_made = false;
+
+            foreach (var str8te in all_str8tes)
+            {
+                // Check Possibilities they might be dirty due to cross-dependency
+                foreach (var possibility in str8te.Possibilities)
+                {
+                    if (str8te.ForbiddenPossibilities.Contains(possibility))
+                        continue;
+
+                    var possiblity_is_valid = CheckIfRangeIsPossibleToApply(possibility, str8te.Cells);
+
+                    if (!possiblity_is_valid)
+                    {
+                        changes_were_made = true;
+                        str8te.ForbiddenPossibilities.Add(possibility);
+                    }
+                }
+            }
+
+            return changes_were_made;
+        }
+
+        private static bool CheckIfRangeIsPossibleToApply(Range range, List<SolverCell> cells)
+        {
+            // TODO diese Funktion könnte komplexere Situationen die eine Range ausschließen würden nicht ausreichend behandeln
+
+            // es wird gecheckt ob eine der Zellen nur possibilities außerhalb der Range enthällt. Ist dies der Fall wird die Range als forbidden markiert
+            var hat_unfillable_cells = cells.Where(x=>!x.isSolved).Any(cell => cell.possibleValues.All(possible_value => !range.isInRange(possible_value))); // gibt es any cell deren possible values alle außerhalb der range liegen
+
+            if (hat_unfillable_cells)
+                return false;
+
+            // es wird gecheckt ob eine der Range-numbers nirgends platziert werden kann
+            var hat_unplacable_range_number = false;
+            foreach (var range_number in range.getRangeNumberList())
+            {
+                var solved_cells_values = cells.Where(x => x.isSolved).Select(x => x.value).ToList();
+                if (solved_cells_values.Contains(range_number))
+                    continue;
+                var not_in_possibilities = !cells.SelectMany(x => x.possibleValues).Contains(range_number);
+                if (not_in_possibilities)
+                {
+                    hat_unplacable_range_number = true;
+                    break;
+                }
+            }
+
+            if (hat_unplacable_range_number)
+                return false;
+
+            return true;
+        }
+
         // Function returns true if paare triggered mustInclude or cannotInclude entrys in any str8te
         internal static bool CollapseCellOptionsIfPaarelementeExist(this SolverBoard board)
         {
@@ -238,7 +306,7 @@ namespace Str8tsGenerationProject.SolvingAlgorithm
 
             for (int i = 0; i < board.size; i++)
             {
-                var row_str8tes = board.horizontal_str8tes.Where(x => x.Cells[0].col_pos == i).ToList();
+                var row_str8tes = board.horizontal_str8tes.Where(x => x.Cells[0].row_pos == i).ToList();
                 var needsRefresh = CollapseCellOptionsIfPaarelementeExistForRowOrCol(row_str8tes);
                 if (needsRefresh)
                     needs_solving_step_restart = true;
@@ -246,7 +314,7 @@ namespace Str8tsGenerationProject.SolvingAlgorithm
 
             for (int i = 0; i < board.size; i++)
             {
-                var col_str8tes = board.vertical_str8tes.Where(x => x.Cells[0].row_pos == i).ToList();
+                var col_str8tes = board.vertical_str8tes.Where(x => x.Cells[0].col_pos == i).ToList();
                 var needsRefresh = CollapseCellOptionsIfPaarelementeExistForRowOrCol(col_str8tes);
                 if (needsRefresh)
                     needs_solving_step_restart = true;
@@ -283,17 +351,28 @@ namespace Str8tsGenerationProject.SolvingAlgorithm
                 /// Weiterhin muss geprüft werden ob in der Row/Col Str8tes existieren die kein Paar enthalten. Wenn ja so bekommen die die values als cannot include sofern nicht bereits existent
                 /// wann immer es must-include oder cannot-include Änderungen gab, so muss der gesamte solving step wiederholt werden
 
-                var non_paar_cells = other_cells.Where(x => !paar_cells_other.Contains(x));
                 var all_paar_cells = new List<SolverCell>();
                 all_paar_cells.Add(current_cell);
                 all_paar_cells.AddRange(paar_cells_other);
 
-                // Remove alle Paar Possibilities
-                foreach (var item in non_paar_cells)
-                {
-                    item.possibleValues.RemoveAll(x => current_cell.possibleValues.Contains(x));
+                var non_paar_cells = other_cells.Where(x => !paar_cells_other.Contains(x)).ToList();
 
-                    if (item.possibleValues.Count == 0)
+                // Remove alle Paar Possibilities
+                foreach (var non_paar_cell in non_paar_cells)
+                {
+                    if (non_paar_cell.isSolved)
+                        continue;
+
+                    foreach (var possible_value in current_cell.possibleValues)
+                    {
+                        if (non_paar_cell.possibleValues.Contains(possible_value))
+                        {
+                            non_paar_cell.possibleValues.Remove(possible_value);
+                            made_entry = true;
+                        }
+                    }
+
+                    if (non_paar_cell.possibleValues.Count == 0)
                         throw new NoSolutionException();
                 }
 
@@ -306,9 +385,9 @@ namespace Str8tsGenerationProject.SolvingAlgorithm
                     var other_str8tes = str8tes.Where(x => x != paare_str8tes[0]).ToList();
                     foreach (var paar_int in paar_ints)
                     {
-                        if (!paare_str8tes[0].AlreadyIncludes.Contains(paar_int))
+                        if (!paare_str8tes[0].MustInclude.Contains(paar_int))
                         {
-                            paare_str8tes[0].AlreadyIncludes.Add(paar_int);
+                            paare_str8tes[0].MustInclude.Add(paar_int);
                             made_entry = true;
                         }
 
@@ -346,11 +425,13 @@ namespace Str8tsGenerationProject.SolvingAlgorithm
             return made_entry;
         }
 
-        internal static void CollapseCellOptionsForMustIncludeHeroCells(this SolverBoard board)
+        internal static bool CollapseCellOptionsForMustIncludeHeroCells(this SolverBoard board)
         {
             var all_str8tes = new List<Str8te>();
             all_str8tes.AddRange(board.vertical_str8tes);
             all_str8tes.AddRange(board.horizontal_str8tes);
+
+            var made_entry = false;
 
             foreach (var str8te in all_str8tes)
             {
@@ -367,11 +448,26 @@ namespace Str8tsGenerationProject.SolvingAlgorithm
                     if (possible_heros.Count == 1)
                     {
                         var hero_zelle = possible_heros[0];
-                        hero_zelle.possibleValues = new List<int> { must_include };
+                        // Hero Zellen müssen den Value einbinden. Alle anderen Zellen in der gesamten Ror/Col bekommen den Wert removed
+                        if (hero_zelle.possibleValues.Count > 1 || !hero_zelle.possibleValues.Contains(must_include)){                 
+                            hero_zelle.possibleValues = new List<int> { must_include };
+                            made_entry = true;
+                        }
+                        var row_col_cells = board.Cells.Where(x => x.row_pos == hero_zelle.row_pos || x.col_pos == hero_zelle.col_pos).ToList();
+                        row_col_cells.Remove(hero_zelle);
+                        foreach (var row_col_cell in row_col_cells)
+                        {
+                            if (row_col_cell.possibleValues.Contains(must_include))
+                            {
+                                row_col_cell.possibleValues.Remove(must_include);
+                                made_entry = true;
+                            }
+                        }
                     }
                 }
-
             }
+
+            return made_entry;
         }
     }
 }

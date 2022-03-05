@@ -13,7 +13,7 @@ namespace Str8tsGenerationProject.SolvingAlgorithm
     {
         public static SolvingResult SolveBoard(JSONBoard jsonBoard)
         {
-            try
+            //try
             {
                 /// In dem Solverboard Constructor werden alle Cells aus dem jsonBoard extrahiert und es werden SolverCells erstellt. 
                 /// Jede Solver Cell enthällt Koordinateninformation (index, row-pos, col-pos), typ information (isBlock, value), state information isSolved und eine possibility Liste
@@ -43,7 +43,7 @@ namespace Str8tsGenerationProject.SolvingAlgorithm
                 while (solver_board.isUnsolved)
                 {
 
-                    try
+                    //try
                     {
                         /// Zuerst werden die Str8te Possibilities neu calculated. Herangezogen werden hierfür eventuelle neue Entrys in den SolvingLists
                         /// hierbei können sich neue Entrys in must include ergeben die dann CannotInclude Entrys in sister str8tes erzeugen
@@ -55,6 +55,12 @@ namespace Str8tsGenerationProject.SolvingAlgorithm
                         /// dann werden alle Possible-Values gestrichen, die in CannotInclude von einem der beiden Cell-Str8tes auftauchen, die in Already Includes auftauchen oder außerhalb aller Range options für eine der Str8tes liegen
                         solver_board.RecalculateAllCellPossibilities();
 
+                        /// Manchmal gibt es aufgrund von cross-dependencys zwischen hor/vert str8tes situationen in denen str8te options aufgrund der neuen Zellensituation nicht mehr abgebildet werden können
+                        /// diese Str8te options müssen hier rausgefiltered werden. Das erfolgt indem der Str8te range-is-forbidden entrys hinzugefügt werden
+                        /// wann immer dies passiert, muss der solving step restartet werden
+                        var anyStr8teGotNewForbiddenEntrys = solver_board.ResolveCrossDependencies();
+                        if (anyStr8teGotNewForbiddenEntrys)
+                            continue; 
 
                         /// Manchmal gibt es row-wise oder col-wise Paare
                         /// Paare sind dependent cells deren optionen gleich sind. Ist die Anzahl der Paar Elemente gleich der geteilten Optionslänge so bilden diese Elemente ein Paar
@@ -67,24 +73,26 @@ namespace Str8tsGenerationProject.SolvingAlgorithm
                         /// Manchmal gibt es must-includes in Str8tes die nur eine der Zellen erfüllen kann (Hero Zellen).
                         /// Für eine solche Hero Zelle kollabieren alle anderen Optionen und sie erfüllt ihre Hero Rolle
                         /// Dieses Szenario wird hier abgehandelt und reduziert die Cell Options im Falle einer HeroCell auf 1 Element
-                        solver_board.CollapseCellOptionsForMustIncludeHeroCells();
+                        var made_changes = solver_board.CollapseCellOptionsForMustIncludeHeroCells();
+                        if (made_changes)
+                            continue;
                     }
-                    catch (NoSolutionException e)
-                    {
-                        /// Bei den Recalculate Funktionen kann es passieren dass die Options für eine Str8te oder Cell auf 0 fallen.
-                        /// Ist dies der Fall so ist das Board nicht lösbar
-                        throw e;
-                    }
+                    //catch (NoSolutionException e)
+                    //{
+                    //    /// Bei den Recalculate Funktionen kann es passieren dass die Options für eine Str8te oder Cell auf 0 fallen.
+                    //    /// Ist dies der Fall so ist das Board nicht lösbar
+                    //    throw e;
+                    //}
 
-
-
-
+                    /// Diese Funktion erzeugt den Solving Step Output. Es ist eine Matrix die für alle Unsolved Cells die Optionen hällt
+                    var cell_options_json = solver_board.CreateCellOptionsJson();
+                    Utils.WriteToJsonFile(cell_options_json);
                     /// Das Solving Step Possibility Matrix sollte an dieser Stelle ins Solving Log aufgenommen werden
 
                     /// Nun gibt es ein Solving Step Ergebnis.
                     /// Dieses besteht aus der Possibility List für Alle Zellen
-                    /// gibt es keine Zellen mit nur einer Possibility so gibt es kein uniques Ergebnis für das Board              
-                    if (solver_board.Cells.All( x => x.possibleValues.Count > 1))
+                    /// gibt es keine non-block, unsolved, Zellen mit nur einer Possibility so gibt es kein uniques Ergebnis für das Board              
+                    if (solver_board.Cells.Where(x => !x.isBlock).Where(x => !x.isSolved).All( x => x.possibleValues.Count > 1))
                     {
                         throw new MultipleSolutionsException();
                     }
@@ -99,20 +107,20 @@ namespace Str8tsGenerationProject.SolvingAlgorithm
 
                 return null;
             }
-            catch (MultipleSolutionsException)
-            {
-                // TODO handle
-                throw;
-            }
-            catch (NoSolutionException)
-            {
-                // TODO handle
-                throw;
-            }
-            catch (Exception)
-            {
-                throw;
-            }
+            //catch (MultipleSolutionsException)
+            //{
+            //    // TODO handle
+            //    throw;
+            //}
+            //catch (NoSolutionException)
+            //{
+            //    // TODO handle
+            //    throw;
+            //}
+            //catch (Exception)
+            //{
+            //    throw;
+            //}
         }
 
     }

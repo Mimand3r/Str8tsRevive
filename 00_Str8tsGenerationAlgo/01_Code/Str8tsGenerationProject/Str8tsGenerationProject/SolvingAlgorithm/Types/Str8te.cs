@@ -18,6 +18,7 @@ namespace Str8tsGenerationProject.SolvingAlgorithm.Types
         public List<int> AlreadyIncludes { get; set; } = new List<int>();
         public List<int> CannotInclude { get; set; } = new List<int>();
         public List<Range> Possibilities { get; set; } = new List<Range>();
+        public List<Range> ForbiddenPossibilities { get; set; } = new List<Range>(); // due to cross-str8tes
     }
 
     public enum Str8teType
@@ -44,5 +45,28 @@ namespace Str8tsGenerationProject.SolvingAlgorithm.Types
         }
 
         public bool isFromTo(int start, int end) => start == this.Start && end == this.End;
+
+        public bool isSimilarTo(Range other)
+        {
+            if (other == this)
+                return true;
+
+            if (this.Start == other.Start && this.End == other.End)
+                return true;
+
+            return false;
+        }
+
+        public List<int> getRangeNumberList()
+        {
+            var output = new List<int>();
+
+            for (int i = this.Start; i <= this.End; i++)
+            {
+                output.Add(i);
+            }
+
+            return output;
+        }
     }
 }
