@@ -5,6 +5,8 @@ VisualStudioVersion = 16.0.31702.278
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Str8tsGenerationProject", "Str8tsGenerationProject\Str8tsGenerationProject.csproj", "{2C25C27A-0CD9-47EC-9FE7-126514D1D9CA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Str8tsGenerationProjectTests", "Str8tsGenerationProjectTests\Str8tsGenerationProjectTests.csproj", "{5E2228B4-560B-42A6-A337-9D31B4099AF4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{2C25C27A-0CD9-47EC-9FE7-126514D1D9CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2C25C27A-0CD9-47EC-9FE7-126514D1D9CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2C25C27A-0CD9-47EC-9FE7-126514D1D9CA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5E2228B4-560B-42A6-A337-9D31B4099AF4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5E2228B4-560B-42A6-A337-9D31B4099AF4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5E2228B4-560B-42A6-A337-9D31B4099AF4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5E2228B4-560B-42A6-A337-9D31B4099AF4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
