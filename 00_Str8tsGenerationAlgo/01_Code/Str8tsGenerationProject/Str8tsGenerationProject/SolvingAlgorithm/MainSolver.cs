@@ -1,4 +1,4 @@
-﻿using Str8tsGenerationProject.JSON; 
+using Str8tsGenerationProject.JSON; 
 using Str8tsGenerationProject.SolvingAlgorithm.Exceptions;
 using Str8tsGenerationProject.SolvingAlgorithm.Types;
 using System;
@@ -161,6 +161,5 @@ namespace Str8tsGenerationProject.SolvingAlgorithm
                 return null;
             }
         }
-
     }
 }
