@@ -11,7 +11,7 @@ namespace Str8tsGenerationProject.SolvingAlgorithm
 {
     public class MainSolver
     {
-        public static SolvingResult SolveBoard(JSONBoard jsonBoard)
+        public static SolvingResult SolveBoard(JSONBoard jsonBoard,  Boolean isInSimulationMode = false, SolverBoard solver_board = null)
         {
             //try
             {
@@ -19,7 +19,10 @@ namespace Str8tsGenerationProject.SolvingAlgorithm
                 /// Jede Solver Cell enthällt Koordinateninformation (index, row-pos, col-pos), typ information (isBlock, value), state information isSolved und eine possibility Liste
                 /// Die Cell Possibility Liste ist eine rechenintensive Größe die von Row/Col Kollegenzellen und Strate Kollegenzellen abhängt. 
                 /// Am Anfang wird die Cell Possibility Liste mit Werten von 1-9 gefüllt was allen Optionen entspricht
-                var solver_board = SolverBoard.createEmptyBoard(jsonBoard);
+                if (solver_board == null) 
+                {
+                    solver_board = SolverBoard.createEmptyBoard(jsonBoard);
+                }
 
                 /// Neben einer Menge an Zellen besteht ein Board aus einer Menge an Str8tes. Jede non blocktype Cell ist Teil von 2 Str8tes einer vertikalen und einer horizontalen
                 /// Eine Str8te besteht aus Koordinateninformation (index, row_start, col_start, length), es gibt 2 Arten von Str8tes horizontal/vertical
@@ -43,7 +46,7 @@ namespace Str8tsGenerationProject.SolvingAlgorithm
                 while (solver_board.isUnsolved)
                 {
 
-                    //try
+                    try
                     {
                         /// Zuerst werden die Str8te Possibilities neu calculated. Herangezogen werden hierfür eventuelle neue Entrys in den SolvingLists
                         /// hierbei können sich neue Entrys in must include ergeben die dann CannotInclude Entrys in sister str8tes erzeugen
@@ -76,51 +79,87 @@ namespace Str8tsGenerationProject.SolvingAlgorithm
                         var made_changes = solver_board.CollapseCellOptionsForMustIncludeHeroCells();
                         if (made_changes)
                             continue;
+
+                        /// Nun können Zellen mit nur einer possibility entstanden sein. wenn dem so ist so müssen diese gefülled werden uns als isSolved markiert werden
+                        /// die beiden str8ts der zelle bekommen nun einen already include entry und sister str8tes einen cannot include entry
+                        /// wann immer hier modifikationen stattfanden so wird der solving step restarted
+
+                        var edited = solver_board.FillSolvedCells();
+                        if (edited)
+                            continue;
+
+                        /// Simulation Mode
+                        /// gibt es immer noch unfilled Cells? 
+                        /// mache eine Kopie des SolvingBoards und führe die selbe Funktion im simulation modus aus. das Ziel ist es einen Wiederspruch zu entdecken und die gewählte Number ausschließen zu können
+
+                        if (isInSimulationMode) return null;
+
+                        if (solver_board.isUnsolved)
+                        {
+                            /// Take Cell with least options and fill 1 randomly
+                            /// now start sumilation run and hope for a no solution exception
+                            /// if it accured remove that option from the cell and rerun the solving step
+                            /// if it didnt accure try again chossing the next value
+
+                            var removed_an_option = false;
+                            var counter = 0;
+                            while (true)
+                            {
+                                SolverBoard solver_board_copy = solver_board.MakeDeepCopy();
+                                /// Hier kann ne multiple Solution exception geworfen werden. dies passiert wenn alle optionen bereits versucht wurden aber nichts ausgeschlossen werden konnte
+                                Utils.chooseNextOption(solver_board_copy, out int cell_index, out int tested_value, counter);
+                                
+                                try
+                                {
+                                    SolveBoard(null, true, solver_board_copy);
+
+                                    /// Hat der Algorithmus zufällig eine korrekte Zahl gewählt, so kann es sein, dass das Board nun völlig gelöst wurde
+                                    /// Trotzdem kann diese Lösung nicht benutzt werden da sie eine von mehreren Lösungen sein kann.
+                                    /// Wir wollen aber sicher gehen dass das Board nur eine gültige Lösung hat, daher können nur Optionen benutzt werden die eine Zahl ausschließen
+                                    /// konnte nichts ausgeschlossen werden dann muss der counter hochgezählt werden. dieser stellt sicher, dass nicht die selbe option gewählt wird
+
+                                    counter += 1;
+                                    continue;
+                                }
+                                catch (NoSolutionException e)
+                                {
+                                    var solver_cell = solver_board.Cells.Find(x => x.index == cell_index);
+                                    solver_cell.possibleValues.Remove(tested_value);
+                                    if (solver_cell.possibleValues.Count == 1)
+                                    {
+                                        solver_board.FillSolvedCells();
+                                    }
+                                    removed_an_option = true;
+                                    break;
+                                }
+                            }
+
+                            if (removed_an_option)
+                                continue;
+
+                        }
+                        
                     }
-                    //catch (NoSolutionException e)
-                    //{
-                    //    /// Bei den Recalculate Funktionen kann es passieren dass die Options für eine Str8te oder Cell auf 0 fallen.
-                    //    /// Ist dies der Fall so ist das Board nicht lösbar
-                    //    throw e;
-                    //}
-
-                    /// Diese Funktion erzeugt den Solving Step Output. Es ist eine Matrix die für alle Unsolved Cells die Optionen hällt
-                    var cell_options_json = solver_board.CreateCellOptionsJson();
-                    Utils.WriteToJsonFile(cell_options_json);
-                    /// Das Solving Step Possibility Matrix sollte an dieser Stelle ins Solving Log aufgenommen werden
-
-                    /// Nun gibt es ein Solving Step Ergebnis.
-                    /// Dieses besteht aus der Possibility List für Alle Zellen
-                    /// gibt es keine non-block, unsolved, Zellen mit nur einer Possibility so gibt es kein uniques Ergebnis für das Board              
-                    if (solver_board.Cells.Where(x => !x.isBlock).Where(x => !x.isSolved).All( x => x.possibleValues.Count > 1))
+                    catch (NoSolutionException e)
                     {
-                        throw new MultipleSolutionsException();
+                        /// Bei den Recalculate Funktionen kann es passieren dass die Options für eine Str8te oder Cell auf 0 fallen.
+                        /// Ist dies der Fall so ist das Board nicht lösbar
+                        throw e;
+                    }
+                    catch (MultipleSolutionsException e)
+                    {
+                        throw e;
                     }
 
-                    /// Nun kann eine beliebige Zelle der Länge 1 gewählt werden und die Possibilty als Value gesetzt werden. Dadurch gilt die Zelle als solved
-                    /// Weiterhin müssen die Str8tes der Zelle geupdated werden. Sie bekommen den neuen Eintrag als AlreadyInclude Entrys und Sister Str8tes bekommen entsprechend CannotInclude Einträge
-                    /// Nun muss gechecked werden ob das Board als solved gilt
-
-                    /// Die gewählte Zahl sollte an dieser Stelle ins Solving Log aufgenommen werden
                 }
 
+                /// Diese Funktion erzeugt den Solving Step Output. Es ist eine Matrix die für alle Unsolved Cells die Optionen hällt
+                var cell_options_json = solver_board.CreateCellOptionsJson();
+                Utils.WriteToJsonFile(cell_options_json);
+                /// Das Solving Step Possibility Matrix sollte an dieser Stelle ins Solving Log aufgenommen werden
 
                 return null;
             }
-            //catch (MultipleSolutionsException)
-            //{
-            //    // TODO handle
-            //    throw;
-            //}
-            //catch (NoSolutionException)
-            //{
-            //    // TODO handle
-            //    throw;
-            //}
-            //catch (Exception)
-            //{
-            //    throw;
-            //}
         }
 
     }
