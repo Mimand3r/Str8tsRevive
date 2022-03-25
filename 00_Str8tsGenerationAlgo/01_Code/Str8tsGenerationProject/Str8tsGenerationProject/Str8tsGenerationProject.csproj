@@ -100,9 +100,15 @@
     <Compile Include="Pages\Controls\Zelle.Designer.cs">
       <DependentUpon>Zelle.cs</DependentUpon>
     </Compile>
+    <Compile Include="SolvingAlgorithm\Exceptions\MultipleSolutionsException.cs" />
+    <Compile Include="SolvingAlgorithm\Exceptions\NoSolutionException.cs" />
     <Compile Include="SolvingAlgorithm\MainSolver.cs" />
-    <Compile Include="SolvingAlgorithm\SolvingUtils.cs" />
+    <Compile Include="SolvingAlgorithm\SolvingAlgorithms.cs" />
+    <Compile Include="SolvingAlgorithm\Types\SolverBoard.cs" />
+    <Compile Include="SolvingAlgorithm\Types\SolverCell.cs" />
     <Compile Include="SolvingAlgorithm\Types\SolvingResult.cs" />
+    <Compile Include="SolvingAlgorithm\Types\Str8te.cs" />
+    <Compile Include="SolvingAlgorithm\Utils.cs" />
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>
