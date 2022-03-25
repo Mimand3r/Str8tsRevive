@@ -121,16 +121,16 @@ namespace Str8tsGenerationProject.SolvingAlgorithm
             {
                 var row_strates = board.horizontal_str8tes.Where(x => x.row_start == i).ToList();
                 var anzahl_blocks_1 = board.Cells.Where(x => x.col_pos == i).ToList().Count;
-                calcAllStratePossibilitiesForRowCol(row_strates, anzahl_blocks_1, board.size);
+                calcAllStratePossibilitiesForRowCol(board, row_strates, anzahl_blocks_1, board.size);
 
                 var col_strates = board.vertical_str8tes.Where(x => x.col_start == i).ToList();
                 var anzahl_blocks_2 = board.Cells.Where(x => x.row_pos == i).ToList().Count;
-                calcAllStratePossibilitiesForRowCol(col_strates, anzahl_blocks_2, board.size);
+                calcAllStratePossibilitiesForRowCol(board, col_strates, anzahl_blocks_2, board.size);
             }
         }
 
         // Diese Funktion soll für jede str8te die Anzahl an Possibilities setzen
-        internal static void calcAllStratePossibilitiesForRowCol(List<Str8te> sibblingStrates, int anzahl_blocks, int boardSize)
+        internal static void calcAllStratePossibilitiesForRowCol(SolverBoard board, List<Str8te> sibblingStrates, int anzahl_blocks, int boardSize)
         {
             List<Str8te> readyStrates = new List<Str8te>();
             List<Str8te> unreadyStrates = new List<Str8te>();
@@ -174,7 +174,7 @@ namespace Str8tsGenerationProject.SolvingAlgorithm
                         // Wann immer ein must-include entry geaddet wurde, so müssen alle sister-str8tes den entry als cannot include bekommen und die Row-calculation muss neu starten
                         var otherSibblings = sibblingStrates.Where(x => x != longestUnreadyStrate).ToList();
                         otherSibblings.ForEach(x => x.CannotInclude.Add(i));
-                        calcAllStratePossibilitiesForRowCol(sibblingStrates, anzahl_blocks, boardSize);
+                        calcAllStratePossibilitiesForRowCol(board, sibblingStrates, anzahl_blocks, boardSize);
                         return;
                     }
                 }
@@ -435,6 +435,10 @@ namespace Str8tsGenerationProject.SolvingAlgorithm
 
             foreach (var str8te in all_str8tes)
             {
+                // skip filled str8te
+                if (str8te.isSolved) 
+                    continue;
+
                 var all_cells = str8te.Cells;
                 var must_includes = str8te.MustInclude;
 
@@ -448,23 +452,54 @@ namespace Str8tsGenerationProject.SolvingAlgorithm
                     if (possible_heros.Count == 1)
                     {
                         var hero_zelle = possible_heros[0];
-                        // Hero Zellen müssen den Value einbinden. Alle anderen Zellen in der gesamten Ror/Col bekommen den Wert removed
-                        if (hero_zelle.possibleValues.Count > 1 || !hero_zelle.possibleValues.Contains(must_include)){                 
-                            hero_zelle.possibleValues = new List<int> { must_include };
-                            made_entry = true;
-                        }
-                        var row_col_cells = board.Cells.Where(x => x.row_pos == hero_zelle.row_pos || x.col_pos == hero_zelle.col_pos).ToList();
-                        row_col_cells.Remove(hero_zelle);
-                        foreach (var row_col_cell in row_col_cells)
-                        {
-                            if (row_col_cell.possibleValues.Contains(must_include))
-                            {
-                                row_col_cell.possibleValues.Remove(must_include);
-                                made_entry = true;
-                            }
-                        }
+                        // Hero Zellen müssen den Value einbinden. 
+                        var hero_is_already_collapsed = hero_zelle.possibleValues.Count == 1 && hero_zelle.possibleValues.Contains(must_include);
+                        if (hero_is_already_collapsed) continue;
+                        
+                        hero_zelle.possibleValues = new List<int> { must_include };
+                        made_entry = true;
+
                     }
                 }
+            }
+
+            return made_entry;
+        }
+
+        internal static bool FillSolvedCells(this SolverBoard board)
+        {
+            var made_entry = false;
+
+            foreach (var cell in board.Cells)
+            {
+                if (cell.isSolved || cell.isBlock) continue;
+
+                if (cell.possibleValues.Count > 1) continue;
+
+                // Cell is solvable because it only has 1 possibility left
+
+                // Cell can be filled and marked as solved
+                cell.value = cell.possibleValues[0];
+                cell.possibleValues.Clear();
+                cell.isSolved = true;
+
+                // Cell Str8tes get a already includes entry and remove must include entrys
+                var cell_str8tes = new List<Str8te>();
+                cell_str8tes.Add(board.horizontal_str8tes.Find(x => x.Cells.Contains(cell)));
+                cell_str8tes.Add(board.vertical_str8tes.Find(x => x.Cells.Contains(cell)));
+
+                cell_str8tes.ForEach(x => x.AlreadyIncludes.Add(cell.value));
+                cell_str8tes.ForEach(x => x.MustInclude.Remove(cell.value));
+
+                // Cell sister str8tes get a cannot include entry
+                var sister_str8tes = new List<Str8te>();
+                sister_str8tes.AddRange(board.horizontal_str8tes.Where(x => x.row_start == cell.row_pos).ToList()); 
+                sister_str8tes.AddRange(board.vertical_str8tes.Where(x => x.col_start == cell.col_pos).ToList());
+                cell_str8tes.ForEach(x => sister_str8tes.Remove(x));
+
+                sister_str8tes.ForEach(x => x.CannotInclude.Add(cell.value));
+
+                made_entry = true;
             }
 
             return made_entry;

@@ -21,6 +21,8 @@ namespace Str8tsGenerationProject.SolvingAlgorithm.Types
                 possibleValues.AddRange(new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9 });
         }
 
+        private SolverCell() { }
+
         public int index { get; set; }
         public int row_pos { get; set; }
         public int col_pos { get; set; }
@@ -28,5 +30,21 @@ namespace Str8tsGenerationProject.SolvingAlgorithm.Types
         public bool isSolved { get; set; }
         public List<int> possibleValues { get; set; } = new List<int>();
         public bool isBlock { get; set; }
+
+        public SolverCell MakeDeepCopy()
+        {
+            var copied_cell = new SolverCell { 
+                index = this.index,
+                row_pos = this.row_pos,
+                col_pos = this.col_pos,
+                value = this.value,
+                isSolved = this.isSolved,
+                isBlock = this.isBlock
+            };
+
+            copied_cell.possibleValues.AddRange(this.possibleValues);
+
+            return copied_cell;
+        }
     }
 }

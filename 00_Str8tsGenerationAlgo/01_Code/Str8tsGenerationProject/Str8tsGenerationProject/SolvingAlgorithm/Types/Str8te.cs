@@ -19,6 +19,8 @@ namespace Str8tsGenerationProject.SolvingAlgorithm.Types
         public List<int> CannotInclude { get; set; } = new List<int>();
         public List<Range> Possibilities { get; set; } = new List<Range>();
         public List<Range> ForbiddenPossibilities { get; set; } = new List<Range>(); // due to cross-str8tes
+
+        public bool isSolved => this.Cells.All(x => x.isSolved);
     }
 
     public enum Str8teType
