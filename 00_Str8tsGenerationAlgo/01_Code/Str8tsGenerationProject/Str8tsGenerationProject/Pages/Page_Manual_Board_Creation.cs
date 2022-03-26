@@ -61,5 +61,14 @@ namespace Str8tsGenerationProject.Pages
             File.WriteAllText(filename, jsonString);
 
         }
+
+        private void clear_clicked(object sender, EventArgs e)
+        {
+            // Draw Board
+            editable_board = new Editable_Board(9);
+            editable_board.Dock = DockStyle.Top;
+            panel1.Controls.Clear();
+            panel1.Controls.Add(editable_board);
+        }
     }
 }
