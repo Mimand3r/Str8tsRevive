@@ -89,38 +89,5 @@ namespace Str8tsGenerationProject.SolvingAlgorithm
 
         //    File.WriteAllText(filename, json);
         //}
-
-        internal static void chooseNextOption(SolverBoard solver_board_copy, out int cell_index, out int filled_value, int counter)
-        {
-            var unsolved_cells = solver_board_copy.Cells.Where(x => !x.isSolved).ToList();
-            unsolved_cells.Sort((x, y) => x.possibleValues.Count - y.possibleValues.Count);
-
-            SolverCell chosen_cell = null;
-            foreach (var unsolved_cell in unsolved_cells)
-            {
-                if (counter >= unsolved_cell.possibleValues.Count)
-                {
-                    counter -= unsolved_cell.possibleValues.Count;
-                    continue;
-                }
-
-                chosen_cell = unsolved_cell;
-                break;
-            }
-
-            if (chosen_cell == null)
-                throw new MultipleSolutionsException();
-
-            var chosen_option = chosen_cell.possibleValues[counter];
-
-            chosen_cell.value = chosen_option;
-            chosen_cell.isSolved = true;
-            chosen_cell.possibleValues.Clear();
-
-            cell_index = chosen_cell.index;
-            filled_value = chosen_option;
-
-            solver_board_copy.currently_testing_cell_index = cell_index;
-        }
     }
 }

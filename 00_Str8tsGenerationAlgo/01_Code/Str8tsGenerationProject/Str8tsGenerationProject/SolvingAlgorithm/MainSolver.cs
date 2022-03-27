@@ -110,7 +110,7 @@ namespace Str8tsGenerationProject.SolvingAlgorithm
                             {
                                 SolverBoard solver_board_copy = solver_board.MakeDeepCopy();
                                 /// Hier kann ne multiple Solution exception geworfen werden. dies passiert wenn alle optionen bereits versucht wurden aber nichts ausgeschlossen werden konnte
-                                Utils.chooseNextOption(solver_board_copy, out int cell_index, out int tested_value, counter);
+                                solver_board_copy.chooseNextOption(out int cell_index, out int tested_value, counter);
                                 
                                 try
                                 {
