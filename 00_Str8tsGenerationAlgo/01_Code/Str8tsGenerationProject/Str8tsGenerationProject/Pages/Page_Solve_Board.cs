@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Str8tsGenerationProject.JSON;
 using Str8tsGenerationProject.Pages.Controls;
+using Str8tsGenerationProject.SolvingAlgorithm.Types;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -51,7 +52,32 @@ namespace Str8tsGenerationProject.Pages
 
         private void button_solve_Click(object sender, EventArgs e)
         {
-            SolvingAlgorithm.MainSolver.SolveBoard(jsonBoard);
+            var solvingResult = SolvingAlgorithm.MainSolver.SolveBoard(jsonBoard);
+
+            if (solvingResult.ResultType == ResultType.NoSolution)
+            {
+                MessageBox.Show("Keine Lösung");
+            }
+            else if (solvingResult.ResultType == ResultType.MultipleSolutions)
+            {
+                MessageBox.Show("Mehrere Lösungen");
+            }
+            else
+            {
+                string json = JsonConvert.SerializeObject(solvingResult.SolvedBoard);
+                // Show Save File Dialog
+                var saveFileDialog = new SaveFileDialog();
+
+                saveFileDialog.Filter = "JSON files (*.json)|*.json;";
+                saveFileDialog.FilterIndex = 0;
+                saveFileDialog.RestoreDirectory = true;
+
+                if (saveFileDialog.ShowDialog() != DialogResult.OK) return;
+
+                var filename = saveFileDialog.FileName;
+
+                File.WriteAllText(filename, json);
+            }
         }
     }
 }

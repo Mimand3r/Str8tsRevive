@@ -165,33 +165,27 @@ namespace Str8tsGenerationProject.SolvingAlgorithm
                 if (!solver_board.isOriginal)
                     throw e;
 
-                throw e;
+                return new SolvingResult
+                {
+                    ResultType = ResultType.NoSolution
+                };
             }
             catch (MultipleSolutionsException e)
             {
-                throw e;
+                return new SolvingResult
+                {
+                    ResultType = ResultType.MultipleSolutions
+                };
             }
 
             // Convert to JSONBoard
             var solvedJsonBoard = solver_board.ConvertToJSONBoard();
 
-            string json = JsonConvert.SerializeObject(solvedJsonBoard);
-            // Show Save File Dialog
-            var saveFileDialog = new SaveFileDialog();
-
-            saveFileDialog.Filter = "JSON files (*.json)|*.json;";
-            saveFileDialog.FilterIndex = 0;
-            saveFileDialog.RestoreDirectory = true;
-
-            if (saveFileDialog.ShowDialog() != DialogResult.OK) return null;
-
-            var filename = saveFileDialog.FileName;
-
-            File.WriteAllText(filename, json);
-
-            /// Das Solving Step Possibility Matrix sollte an dieser Stelle ins Solving Log aufgenommen werden
-
-            return null;
+            return new SolvingResult
+            {
+                ResultType = ResultType.Success,
+                SolvedBoard = solvedJsonBoard
+            };
 
         }
     }

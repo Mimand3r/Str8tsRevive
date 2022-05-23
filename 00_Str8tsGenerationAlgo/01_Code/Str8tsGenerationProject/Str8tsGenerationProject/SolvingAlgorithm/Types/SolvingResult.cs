@@ -9,5 +9,14 @@ namespace Str8tsGenerationProject.SolvingAlgorithm.Types
 {
     public class SolvingResult
     {
+        public ResultType ResultType { get; set; }
+        public JSONBoard SolvedBoard { get; set; } = null;
+    }
+
+    public enum ResultType
+    {
+        Success,
+        NoSolution,
+        MultipleSolutions
     }
 }
