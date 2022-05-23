@@ -504,5 +504,32 @@ namespace Str8tsGenerationProject.SolvingAlgorithm
 
             return made_entry;
         }
+
+        internal static List<(int, int)> createOptionsArray(this SolverBoard solver_board_copy)
+        {
+            var unsolved_cells = solver_board_copy.Cells.Where(x => !x.isSolved).ToList();
+            var optionsList = new List<(int, int)>();
+            unsolved_cells.ForEach(unsolved_cell =>
+            {
+                unsolved_cell.possibleValues.ForEach(possible_value =>
+                {
+                    optionsList.Add((unsolved_cell.index, possible_value));
+                });
+            });
+
+            return optionsList;
+        }
+
+        internal static void fillOption(this SolverBoard solver_board_copy, (int,int) tested_option)
+        {
+            var chosen_cell = solver_board_copy.Cells.Find(x => x.index == tested_option.Item1);
+            var chosen_option = chosen_cell.possibleValues.Find(x => x == tested_option.Item2);
+
+            chosen_cell.value = chosen_option;
+            chosen_cell.isSolved = true;
+            chosen_cell.possibleValues.Clear();
+
+            solver_board_copy.currently_testing_cell_index = chosen_cell.index;
+        }
     }
 }
