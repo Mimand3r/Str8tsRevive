@@ -505,37 +505,31 @@ namespace Str8tsGenerationProject.SolvingAlgorithm
             return made_entry;
         }
 
-        internal static void chooseNextOption(this SolverBoard solver_board_copy, out int cell_index, out int filled_value, int counter)
+        internal static List<(int, int)> createOptionsArray(this SolverBoard solver_board_copy)
         {
             var unsolved_cells = solver_board_copy.Cells.Where(x => !x.isSolved).ToList();
-            unsolved_cells.Sort((x, y) => x.possibleValues.Count - y.possibleValues.Count);
-
-            SolverCell chosen_cell = null;
-            foreach (var unsolved_cell in unsolved_cells)
+            var optionsList = new List<(int, int)>();
+            unsolved_cells.ForEach(unsolved_cell =>
             {
-                if (counter >= unsolved_cell.possibleValues.Count)
+                unsolved_cell.possibleValues.ForEach(possible_value =>
                 {
-                    counter -= unsolved_cell.possibleValues.Count;
-                    continue;
-                }
+                    optionsList.Add((unsolved_cell.index, possible_value));
+                });
+            });
 
-                chosen_cell = unsolved_cell;
-                break;
-            }
+            return optionsList;
+        }
 
-            if (chosen_cell == null)
-                throw new MultipleSolutionsException();
-
-            var chosen_option = chosen_cell.possibleValues[counter];
+        internal static void fillOption(this SolverBoard solver_board_copy, (int,int) tested_option)
+        {
+            var chosen_cell = solver_board_copy.Cells.Find(x => x.index == tested_option.Item1);
+            var chosen_option = chosen_cell.possibleValues.Find(x => x == tested_option.Item2);
 
             chosen_cell.value = chosen_option;
             chosen_cell.isSolved = true;
             chosen_cell.possibleValues.Clear();
 
-            cell_index = chosen_cell.index;
-            filled_value = chosen_option;
-
-            solver_board_copy.currently_testing_cell_index = cell_index;
+            solver_board_copy.currently_testing_cell_index = chosen_cell.index;
         }
     }
 }

@@ -16,7 +16,7 @@ namespace Str8tsGenerationProject.SolvingAlgorithm
     {
         public static SolvingResult SolveBoard(JSONBoard jsonBoard,  Boolean isInSimulationMode = false, SolverBoard solver_board = null)
         {
-            //try
+            try
             {
                 /// In dem Solverboard Constructor werden alle Cells aus dem jsonBoard extrahiert und es werden SolverCells erstellt. 
                 /// Jede Solver Cell enthällt Koordinateninformation (index, row-pos, col-pos), typ information (isBlock, value), state information isSolved und eine possibility Liste
@@ -42,15 +42,13 @@ namespace Str8tsGenerationProject.SolvingAlgorithm
                 /// Cannot Includes werden auch gefüllt wenn sister Block Values bei Str8tes auftauchen
                 /// 
                 /// Die Possibility Liste wird maximal gefüllt und ignoriert dabei im initialen Schritt die NumberArrays
-                solver_board.CreateCleanStraightsLayout(); 
+                solver_board.CreateCleanStraightsLayout();
 
 
+                var retryCounter = 0;
                 /// Solving Loop 
                 while (solver_board.isUnsolved)
                 {
-
-                    try
-                    {
                         /// Zuerst werden die Str8te Possibilities neu calculated. Herangezogen werden hierfür eventuelle neue Entrys in den SolvingLists
                         /// hierbei können sich neue Entrys in must include ergeben die dann CannotInclude Entrys in sister str8tes erzeugen
                         /// wann immer dies passiert ist, so muss die Possibility Calculation neu gestartet werden
@@ -88,14 +86,14 @@ namespace Str8tsGenerationProject.SolvingAlgorithm
                         /// wann immer hier modifikationen stattfanden so wird der solving step restarted
 
                         var edited = solver_board.FillSolvedCells();
-                        if (edited)
+                        if (edited && !solver_board.isUnsolved)
                             continue;
 
-                        /// Simulation Mode
-                        /// gibt es immer noch unfilled Cells? 
-                        /// mache eine Kopie des SolvingBoards und führe die selbe Funktion im simulation modus aus. das Ziel ist es einen Wiederspruch zu entdecken und die gewählte Number ausschließen zu können
+                    /// Simulation Mode
+                    /// gibt es immer noch unfilled Cells? 
+                    /// mache eine Kopie des SolvingBoards und führe die selbe Funktion im simulation modus aus. das Ziel ist es einen Wiederspruch zu entdecken und die gewählte Number ausschließen zu können
 
-                        if (isInSimulationMode) return null;
+                    if (isInSimulationMode) return null;
 
                         if (solver_board.isUnsolved)
                         {
@@ -109,8 +107,21 @@ namespace Str8tsGenerationProject.SolvingAlgorithm
                             while (true)
                             {
                                 SolverBoard solver_board_copy = solver_board.MakeDeepCopy();
-                                /// Hier kann ne multiple Solution exception geworfen werden. dies passiert wenn alle optionen bereits versucht wurden aber nichts ausgeschlossen werden konnte
-                                solver_board_copy.chooseNextOption(out int cell_index, out int tested_value, counter);
+
+                                var optionsArray = solver_board_copy.createOptionsArray();
+
+                                if (counter >= optionsArray.Count)
+                                {
+                                    /// in diesem Fall konnte keine Option ausgeschlossen werden.
+                                    /// Das Board enthällt keine eindeutige Lösung mehr da alle remaining Optionen zu einer von meheren Solutions führen
+
+                                    throw new MultipleSolutionsException();
+                                }
+
+                                var optionToTest = optionsArray[counter];
+
+                                /// Es wird eine Option 'ausprobiert'. Ziel ist es diese ausschließen zu können um sie aus der Optionsliste ausschließen zu können
+                                solver_board_copy.fillOption(optionToTest);
                                 
                                 try
                                 {
@@ -126,8 +137,8 @@ namespace Str8tsGenerationProject.SolvingAlgorithm
                                 }
                                 catch (NoSolutionException e)
                                 {
-                                    var solver_cell = solver_board.Cells.Find(x => x.index == cell_index);
-                                    solver_cell.possibleValues.Remove(tested_value);
+                                    var solver_cell = solver_board.Cells.Find(x => x.index == optionToTest.Item1);
+                                    solver_cell.possibleValues.Remove(optionToTest.Item2);
                                     if (solver_cell.possibleValues.Count == 1)
                                     {
                                         solver_board.FillSolvedCells();
@@ -142,46 +153,46 @@ namespace Str8tsGenerationProject.SolvingAlgorithm
 
                         }
                         
-                    }
-                    catch (NoSolutionException e)
-                    {
-                        /// Bei den Recalculate Funktionen kann es passieren dass die Options für eine Str8te oder Cell auf 0 fallen.
-                        /// Ist dies der Fall so ist das Board nicht lösbar
-                        throw e;
-                    }
-                    catch (MultipleSolutionsException e)
-                    {
-                        throw e;
-                    }
-
                 }
 
                 /// Diese Funktion erzeugt den Solving Step Output. Es ist eine Matrix die für alle Unsolved Cells die Optionen hällt
                 //var cell_options_json = solver_board.CreateCellOptionsJson();
                 //Utils.WriteToJsonFile(cell_options_json);
-
-
-                // Convert to JSONBoard
-                var solvedJsonBoard = solver_board.ConvertToJSONBoard();
-
-                string json = JsonConvert.SerializeObject(solvedJsonBoard);
-                // Show Save File Dialog
-                var saveFileDialog = new SaveFileDialog();
-
-                saveFileDialog.Filter = "JSON files (*.json)|*.json;";
-                saveFileDialog.FilterIndex = 0;
-                saveFileDialog.RestoreDirectory = true;
-
-                if (saveFileDialog.ShowDialog() != DialogResult.OK) return null;
-
-                var filename = saveFileDialog.FileName;
-
-                File.WriteAllText(filename, json);
-
-                /// Das Solving Step Possibility Matrix sollte an dieser Stelle ins Solving Log aufgenommen werden
-
-                return null;
             }
+            catch (NoSolutionException e)
+            {
+                /// Wenn eine simmulierte funktion diese Exception auslöst
+                if (!solver_board.isOriginal)
+                    throw e;
+
+                throw e;
+            }
+            catch (MultipleSolutionsException e)
+            {
+                throw e;
+            }
+
+            // Convert to JSONBoard
+            var solvedJsonBoard = solver_board.ConvertToJSONBoard();
+
+            string json = JsonConvert.SerializeObject(solvedJsonBoard);
+            // Show Save File Dialog
+            var saveFileDialog = new SaveFileDialog();
+
+            saveFileDialog.Filter = "JSON files (*.json)|*.json;";
+            saveFileDialog.FilterIndex = 0;
+            saveFileDialog.RestoreDirectory = true;
+
+            if (saveFileDialog.ShowDialog() != DialogResult.OK) return null;
+
+            var filename = saveFileDialog.FileName;
+
+            File.WriteAllText(filename, json);
+
+            /// Das Solving Step Possibility Matrix sollte an dieser Stelle ins Solving Log aufgenommen werden
+
+            return null;
+
         }
     }
 }
