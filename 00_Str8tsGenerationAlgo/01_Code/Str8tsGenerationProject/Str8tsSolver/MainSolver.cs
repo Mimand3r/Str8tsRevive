@@ -1,14 +1,7 @@
-using Newtonsoft.Json;
 using Str8tsGenerationProject.JSON; 
 using Str8tsGenerationProject.SolvingAlgorithm.Exceptions;
 using Str8tsGenerationProject.SolvingAlgorithm.Types;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace Str8tsGenerationProject.SolvingAlgorithm
 {
