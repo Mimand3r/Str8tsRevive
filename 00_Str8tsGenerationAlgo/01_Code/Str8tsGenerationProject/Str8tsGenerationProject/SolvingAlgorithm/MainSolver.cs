@@ -174,7 +174,8 @@ namespace Str8tsGenerationProject.SolvingAlgorithm
             {
                 return new SolvingResult
                 {
-                    ResultType = ResultType.MultipleSolutions
+                    ResultType = ResultType.MultipleSolutions,
+                    UnsolvedBoard = solver_board,
                 };
             }
 
