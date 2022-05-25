@@ -55,7 +55,6 @@
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
-    <Compile Include="JSON\JSONBoard.cs" />
     <Compile Include="Pages\Controls\Editable_Board.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -100,15 +99,6 @@
     <Compile Include="Pages\Controls\Zelle.Designer.cs">
       <DependentUpon>Zelle.cs</DependentUpon>
     </Compile>
-    <Compile Include="SolvingAlgorithm\Exceptions\MultipleSolutionsException.cs" />
-    <Compile Include="SolvingAlgorithm\Exceptions\NoSolutionException.cs" />
-    <Compile Include="SolvingAlgorithm\MainSolver.cs" />
-    <Compile Include="SolvingAlgorithm\SolvingAlgorithms.cs" />
-    <Compile Include="SolvingAlgorithm\Types\SolverBoard.cs" />
-    <Compile Include="SolvingAlgorithm\Types\SolverCell.cs" />
-    <Compile Include="SolvingAlgorithm\Types\SolvingResult.cs" />
-    <Compile Include="SolvingAlgorithm\Types\Str8te.cs" />
-    <Compile Include="SolvingAlgorithm\Utils.cs" />
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>
@@ -139,7 +129,6 @@
     <EmbeddedResource Include="Pages\Controls\Zelle.resx">
       <DependentUpon>Zelle.cs</DependentUpon>
     </EmbeddedResource>
-    <None Include="JSON\example_board.json" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -153,6 +142,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Str8tsSolver\Str8tsSolver.csproj">
+      <Project>{d353bd36-72ee-47da-8929-6c90e91825a8}</Project>
+      <Name>Str8tsSolver</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
