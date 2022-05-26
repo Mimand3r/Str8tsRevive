@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Str8tsGenerationProject", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Str8tsSolver", "Str8tsSolver\Str8tsSolver.csproj", "{D353BD36-72EE-47DA-8929-6C90E91825A8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Str8tsGenerator", "Str8tsGenerator\Str8tsGenerator.csproj", "{067D4380-AB31-459F-887D-21FA46A1FB1E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{D353BD36-72EE-47DA-8929-6C90E91825A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D353BD36-72EE-47DA-8929-6C90E91825A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D353BD36-72EE-47DA-8929-6C90E91825A8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{067D4380-AB31-459F-887D-21FA46A1FB1E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{067D4380-AB31-459F-887D-21FA46A1FB1E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{067D4380-AB31-459F-887D-21FA46A1FB1E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{067D4380-AB31-459F-887D-21FA46A1FB1E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

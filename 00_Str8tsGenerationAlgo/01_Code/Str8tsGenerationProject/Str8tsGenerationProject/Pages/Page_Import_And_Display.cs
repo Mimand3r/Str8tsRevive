@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Str8tsGenerationProject.JSON;
 using Str8tsGenerationProject.Pages.Controls;
+using Str8tsGenerator;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -47,6 +48,19 @@ namespace Str8tsGenerationProject.Pages
             static_board.Dock = DockStyle.Top;
             panel1.Controls.Clear();
             panel1.Controls.Add(static_board);
+        }
+
+        private void GenerateLevelKlicked(object sender, EventArgs e)
+        {
+            var generated_level = Generator.GenerateLevel();
+
+            // Draw Board
+            this.jsonBoard = generated_level;
+            var static_board = new Static_Board(this.jsonBoard);
+            static_board.Dock = DockStyle.Top;
+            panel1.Controls.Clear();
+            panel1.Controls.Add(static_board);
+
         }
     }
 }

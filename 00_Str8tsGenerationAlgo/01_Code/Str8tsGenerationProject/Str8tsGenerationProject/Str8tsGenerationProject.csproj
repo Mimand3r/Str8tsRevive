@@ -144,6 +144,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Str8tsGenerator\Str8tsGenerator.csproj">
+      <Project>{067d4380-ab31-459f-887d-21fa46a1fb1e}</Project>
+      <Name>Str8tsGenerator</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Str8tsSolver\Str8tsSolver.csproj">
       <Project>{d353bd36-72ee-47da-8929-6c90e91825a8}</Project>
       <Name>Str8tsSolver</Name>
