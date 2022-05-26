@@ -27,7 +27,10 @@ namespace Str8tsGenerationProject
         [Category("Zelle"), Description("A property that controls the wossname")]
         private void setZahl(int zahl)
         {
-            label1.Text = zahl.ToString();
+            if (zahl > 0)
+                label1.Text = zahl.ToString();
+            else
+                label1.Text = string.Empty;
         }
 
         private void setType(string type)
