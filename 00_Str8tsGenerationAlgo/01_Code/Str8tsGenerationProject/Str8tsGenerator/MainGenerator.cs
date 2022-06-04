@@ -19,25 +19,61 @@ namespace Str8tsGenerator
 
             // Fill Blocks
 
-            var max = 0.35;
-            var min = 0.2;
+            var max = 0.4;
+            var min = 0.25;
             var block_wahrscheinlichkeit = random.NextDouble() * (max - min) + min;
 
-            for (int i = 0; i < size; i++)
+            var blockBoardIsValid = false;
+
+            while (!blockBoardIsValid)
             {
-                for (int j = 0; j < size; j++)
+                newBoard.cells.Clear();
+
+                for (int i = 0; i < size; i++)
                 {
-                    var isBlock = random.NextDouble() <= block_wahrscheinlichkeit;
-
-                    var newCell = new JSONBoardCell
+                    for (int j = 0; j < size; j++)
                     {
-                        number = 0,
-                        type = isBlock ? "block" : "standard"
-                    };
+                        var isBlock = random.NextDouble() <= block_wahrscheinlichkeit;
 
-                    newBoard.cells.Add(newCell);
+                        var newCell = new JSONBoardCell
+                        {
+                            number = 0,
+                            type = isBlock ? "block" : "standard"
+                        };
+
+                        newBoard.cells.Add(newCell);
+                    }
                 }
+
+                // Check if blockboard is valid. it must not contain any isolated cells who are fully surrounded by blocks
+
+                var isolatedCellExists = false;
+                
+                for (int index = 0; index < newBoard.cells.Count; index++)
+                {
+                    var cell = newBoard.cells[index];
+                    if (cell.type == "block")
+                        continue;
+
+                    int row = Convert.ToInt32(Math.Floor(index / (float)size));
+                    int col = index % size;
+
+                    var aboveIsBlock = row == 0 ? true : newBoard.cells[index - size].type == "block";
+                    var leftIsBlock = col == 0? true : newBoard.cells[index - 1].type == "block";
+                    var belowIsBlock = row == size - 1? true : newBoard.cells[index + size].type == "block";
+                    var rightIsBlock = col == size - 1 ? true : newBoard.cells[index + 1].type == "block";
+
+                    if (aboveIsBlock && rightIsBlock && belowIsBlock && leftIsBlock)
+                    {
+                        isolatedCellExists = true;
+                        break;
+                    }             
+                }
+
+                if (!isolatedCellExists)
+                    blockBoardIsValid = true;
             }
+            
 
             // Fill Numbers
 
