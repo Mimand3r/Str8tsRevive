@@ -50,29 +50,61 @@ namespace Str8tsGenerationProject.Pages
             panel1.Controls.Add(static_board);
         }
 
-        private void GenerateLevelKlicked(object sender, EventArgs e)
+        private async void GenerateLevelKlicked(object sender, EventArgs e)
         {
-            var generated_level = Generator.GenerateLevel();
+            var count = Convert.ToInt32(countBox.Value);
+            var base_file_name = fileNameBox.Text;
 
-            // Draw Board
-            this.jsonBoard = generated_level;
-            var static_board = new Static_Board(this.jsonBoard);
-            static_board.Dock = DockStyle.Top;
-            panel1.Controls.Clear();
-            panel1.Controls.Add(static_board);
+            if (String.IsNullOrEmpty(base_file_name))
+            {
+                MessageBox.Show("Bitte einen File Namen angeben");
+                return;
+            }
 
-            // Show Save File Dialog
-            var jsonString = JsonConvert.SerializeObject(this.jsonBoard);
-            var saveFileDialog = new SaveFileDialog();
+            // Show Folder selection Dialog
 
-            saveFileDialog.Filter = "JSON files (*.json)|*.json;";
-            saveFileDialog.FilterIndex = 0;
-            saveFileDialog.RestoreDirectory = true;
+            var folderDialog = new FolderBrowserDialog();
+            folderDialog.SelectedPath = Path.GetFullPath(AppDomain.CurrentDomain.BaseDirectory + "..\\..\\..");
+            var dialogResult = folderDialog.ShowDialog();
 
-            if (saveFileDialog.ShowDialog() != DialogResult.OK) return;
+            if (dialogResult != DialogResult.OK || string.IsNullOrWhiteSpace(folderDialog.SelectedPath))
+            {
+                MessageBox.Show("Es muss ein Pfad gewählt werden unter dem die Dokumente gespeichert werden");
+                return;
+            }
 
-            var filename = saveFileDialog.FileName;
-            File.WriteAllText(filename, jsonString);
+            // Show progress popup
+
+            var progressPopup = new ProgressDialog();
+            progressPopup.Left = (this.Width - progressPopup.Width) / 2;
+            progressPopup.Top = (this.Height - progressPopup.Height) / 2;
+            this.Controls.Add(progressPopup);
+            progressPopup.BringToFront();
+
+            // Create Levels
+
+            for (int counter = 1; counter <= count; counter++)
+            {
+                progressPopup.showMainText($"Datei {counter}/{count} wird erstellt.");
+                await Task.Run(() =>
+                {
+                    var generated_level = Generator.GenerateLevel();
+                    var jsonString = JsonConvert.SerializeObject(generated_level);
+                    var potential_filename = "";
+                    var nameCounter = 0;
+                    var path = "";
+                    do
+                    {
+                        nameCounter++;
+                        potential_filename = base_file_name + "_" + nameCounter.ToString("D3") + ".json";
+                        path = Path.GetFullPath(folderDialog.SelectedPath + "\\" + potential_filename);
+                    } while (File.Exists(path));
+                    File.WriteAllText(path, jsonString);
+                });
+            }
+
+            this.Controls.Remove(progressPopup);
+            MessageBox.Show($"Die Erstellung von {count} Levels war erfolgreich. Der Prozess hat {progressPopup.seconds} Sekunden gedauert.");
 
         }
     }

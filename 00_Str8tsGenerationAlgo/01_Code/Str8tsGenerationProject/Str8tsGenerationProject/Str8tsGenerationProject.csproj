@@ -61,6 +61,12 @@
     <Compile Include="Pages\Controls\Editable_Board.Designer.cs">
       <DependentUpon>Editable_Board.cs</DependentUpon>
     </Compile>
+    <Compile Include="Pages\Controls\ProgressDialog.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Pages\Controls\ProgressDialog.Designer.cs">
+      <DependentUpon>ProgressDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="Pages\Controls\Static_Board.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -101,6 +107,9 @@
     </Compile>
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\Controls\ProgressDialog.resx">
+      <DependentUpon>ProgressDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Pages\Controls\Static_Board.resx">
       <DependentUpon>Static_Board.cs</DependentUpon>
