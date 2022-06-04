@@ -61,6 +61,19 @@ namespace Str8tsGenerationProject.Pages
             panel1.Controls.Clear();
             panel1.Controls.Add(static_board);
 
+            // Show Save File Dialog
+            var jsonString = JsonConvert.SerializeObject(this.jsonBoard);
+            var saveFileDialog = new SaveFileDialog();
+
+            saveFileDialog.Filter = "JSON files (*.json)|*.json;";
+            saveFileDialog.FilterIndex = 0;
+            saveFileDialog.RestoreDirectory = true;
+
+            if (saveFileDialog.ShowDialog() != DialogResult.OK) return;
+
+            var filename = saveFileDialog.FileName;
+            File.WriteAllText(filename, jsonString);
+
         }
     }
 }
