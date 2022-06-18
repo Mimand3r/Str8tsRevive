@@ -18,6 +18,8 @@ namespace Str8tsGenerator
 
             var newBoard = new JSONBoard { size = size };
 
+            var noSolutionCounter = 0;
+
             // Fill Blocks
 
             var max = 0.4;
@@ -87,48 +89,36 @@ namespace Str8tsGenerator
             JSONBoard previousJsonBoard = newBoard;
             SolvingResult solvingResult = MainSolver.SolveBoard(previousJsonBoard);
 
-
             while (true)
             {
                 newBoard = MakeJSONBoardCopy(previousJsonBoard);
 
                 /// fülle eine neue zufällig gewählte Zahl in das Board ein
-                var new_cell_number = -1;
+                
 
-                while(new_cell_number == -1)
+                // Potentielle Zellen sind ungefüllte und wenn non Blocks dann niemals die letzten in einer Str8te
+                var potential_cells = newBoard.cells.Where(potentialCell =>
                 {
-                    // finde random Cell die noch nicht gefüllt ist. Dies wird die neue FillCell
-                    var potential_new_cell_number = random.Next(newBoard.cells.Count);
+                    var index = newBoard.cells.FindIndex(x => x == potentialCell);
+                    var isUnsolved = solvingResult.UnsolvedBoard.Cells.Find(x => x.index == index).value == 0;
+                    var isBlock = potentialCell.type == "block";
+                    if (isBlock)
+                        return isUnsolved;
+                    var hor_strate_partners = solvingResult.UnsolvedBoard.horizontal_str8tes.Find(strate => strate.Cells.Select(cell => cell.index).ToList().Contains(index)).Cells.Where(cell => cell.index != index).ToList();
+                    var vert_strate_partners = solvingResult.UnsolvedBoard.vertical_str8tes.Find(strate => strate.Cells.Select(cell => cell.index).ToList().Contains(index)).Cells.Where(cell => cell.index != index).ToList();
+                    var isLastInStrate = (hor_strate_partners.All(cell => cell.isSolved) || vert_strate_partners.All(cell => cell.isSolved));
 
-                    var potential_new_cell_is_block = newBoard.cells[potential_new_cell_number].type == "block";
+                    return isUnsolved && !isLastInStrate;
+                }).ToList();
 
-                    // Es dürfen nie Zellen gewählt werden wenn dadurch eine Str8te komplett wäre
-                    if (!potential_new_cell_is_block)
-                    {
-                        var hor_strate_partners = solvingResult.UnsolvedBoard.horizontal_str8tes.Find(strate => strate.Cells.Select(cell => cell.index).ToList().Contains(potential_new_cell_number)).Cells.Where(cell => cell.index != potential_new_cell_number).ToList();
-                        var vert_strate_partners = solvingResult.UnsolvedBoard.vertical_str8tes.Find(strate => strate.Cells.Select(cell => cell.index).ToList().Contains(potential_new_cell_number)).Cells.Where(cell => cell.index != potential_new_cell_number).ToList();
-                        if (hor_strate_partners.All(cell => cell.isSolved) || vert_strate_partners.All(cell => cell.isSolved)) continue;
-                    }
-
-                    // Gewählte Zelle muss noch den Wert 0 haben 
-                    if (newBoard.cells[potential_new_cell_number].number > 0) continue;
-
-                    // Manchmal ergeben sich die Values bereits logisch im SolvingErgebnis.
-                    // In diesem Fall sind sie im Solving Ergebnis bereits als gefüllt markiert.
-                    // Solche Zellen brauchen nicht gesetzt werden
-                    if (solvingResult.UnsolvedBoard.Cells.Find(x => x.index == potential_new_cell_number).value > 0) continue;
-                    
-                    // Wenn die Zelle gültig ist kann der Prozess fortgesetzt werden. Die Zelle wird nun random gefüllt
-                    new_cell_number = potential_new_cell_number;
-                }
-
-                var cell_to_fill = newBoard.cells[new_cell_number];
+                var cell_to_fill = potential_cells[random.Next(potential_cells.Count)];
                 var cell_is_block = cell_to_fill.type == "block";
+                var cell_index = newBoard.cells.FindIndex(x => x == cell_to_fill);
 
                 if (!cell_is_block)
                 {
                     // Bei Non Blocks wähle zufällig eine der möglichen Numbers aus
-                    var possible_numbers = solvingResult.UnsolvedBoard.Cells.Find( x => x.index == new_cell_number).possibleValues;
+                    var possible_numbers = solvingResult.UnsolvedBoard.Cells.Find( x => x.index == cell_index).possibleValues;
                     var chosen_number = possible_numbers[random.Next(possible_numbers.Count)];
                     cell_to_fill.number = chosen_number;
                 }
@@ -137,8 +127,8 @@ namespace Str8tsGenerator
                     // Bei Blocks finde raus welche Zahlen in Col/Row Partnerzellen bereits belegt sind. Diese kommen nicht in Frage
                     var possible_numbers = new List<int> { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
 
-                    var cell_row_pos = Convert.ToInt32(Math.Floor(new_cell_number / 9f));
-                    var cell_col_pos = new_cell_number % 9;
+                    var cell_row_pos = Convert.ToInt32(Math.Floor(cell_index / 9f));
+                    var cell_col_pos = cell_index % 9;
 
                     var partnerZellen = solvingResult.UnsolvedBoard.Cells.Where(cell =>                   
                         // Eine Partnerzelle liegt in selber Row Oder Column
@@ -180,6 +170,17 @@ namespace Str8tsGenerator
                 {
                     // Im Falle einer NoSolution sollte vorheriger BoardState wiederhergestellt werden,
                     // die letzte Änderung also Rückgängig gemacht werden
+
+                    /// Manchmal verhaspelt sich der Generator. Der Grund hierfür ist ungeklärt
+                    /// Daher wird hier ein counter eingebaut. Wenn 100 Mal in Folge no Solution erzeugt wurde so wird das
+                    /// Board als ungültig abgetan und es wird neu versucht
+
+                    noSolutionCounter += 1;
+                    if (noSolutionCounter > 100)
+                    {
+                        return GenerateLevel(size);
+                    }
+
                     continue;
                 }
 
@@ -188,6 +189,7 @@ namespace Str8tsGenerator
                     // Die Änderung war gültig das Board ist aber noch nicht fertig
                     previousJsonBoard = newBoard;
                     solvingResult = copy_solving_result;
+                    noSolutionCounter = 0;
                     continue;
                 }
             }
