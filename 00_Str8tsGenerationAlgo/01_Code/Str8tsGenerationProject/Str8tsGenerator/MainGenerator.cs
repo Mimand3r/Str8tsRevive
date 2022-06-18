@@ -113,6 +113,7 @@ namespace Str8tsGenerator
                     // Solche Zellen brauchen nicht gesetzt werden
                     if (solvingResult.UnsolvedBoard.Cells.Find(x => x.index == potential_new_cell_number).value > 0) continue;
                     
+                    // Wenn die Zelle gültig ist kann der Prozess fortgesetzt werden. Die Zelle wird nun random gefüllt
                     new_cell_number = potential_new_cell_number;
                 }
 
