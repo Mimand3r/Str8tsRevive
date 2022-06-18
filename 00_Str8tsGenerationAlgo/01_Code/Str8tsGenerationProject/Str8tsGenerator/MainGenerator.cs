@@ -1,6 +1,7 @@
 ﻿using Str8tsGenerationProject.JSON;
 using Str8tsGenerationProject.SolvingAlgorithm;
 using Str8tsGenerationProject.SolvingAlgorithm.Types;
+using Str8tsGenerator.Types;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +12,7 @@ namespace Str8tsGenerator
 {
     public class Generator
     {
-        public static JSONBoard GenerateLevel(int size = 9)
+        public static GenerationResult GenerateLevel(int size = 9)
         {
             var random = new System.Random(Guid.NewGuid().GetHashCode());
 
@@ -63,7 +64,13 @@ namespace Str8tsGenerator
                     var belowIsBlock = row == size - 1? true : newBoard.cells[index + size].type == "block";
                     var rightIsBlock = col == size - 1 ? true : newBoard.cells[index + 1].type == "block";
 
-                    if (aboveIsBlock && rightIsBlock && belowIsBlock && leftIsBlock)
+                    var anzahlBlockNeighbours = 0;
+                    anzahlBlockNeighbours += aboveIsBlock ? 1 : 0;
+                    anzahlBlockNeighbours += leftIsBlock ? 1 : 0;
+                    anzahlBlockNeighbours += belowIsBlock ? 1 : 0;
+                    anzahlBlockNeighbours += rightIsBlock ? 1 : 0;
+
+                    if (anzahlBlockNeighbours > 2)
                     {
                         isolatedCellExists = true;
                         break;
@@ -139,7 +146,11 @@ namespace Str8tsGenerator
                 {
                     // Board is finished and fully generated
                     solvingResult = copy_solving_result;
-                    break; 
+                    return new GenerationResult
+                    {
+                        EmptyBoard = newBoard,
+                        Solution = solvingResult.SolvedBoard
+                    };
                 }
                     
 
@@ -158,8 +169,6 @@ namespace Str8tsGenerator
                     continue;
                 }
             }
-            
-            return newBoard;
         }
 
         private static JSONBoard MakeJSONBoardCopy(JSONBoard original)
