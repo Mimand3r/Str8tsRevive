@@ -2,6 +2,7 @@
 using Str8tsGenerationProject.JSON;
 using Str8tsGenerationProject.Pages.Controls;
 using Str8tsGenerator;
+using Str8tsGenerator.Types;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -40,7 +41,13 @@ namespace Str8tsGenerationProject.Pages
             if (!File.Exists(selectedFile)) return;
             var title = selectedFile.Split('\\').Last();
             var fileData = File.ReadAllText(selectedFile);
-            this.jsonBoard = JsonConvert.DeserializeObject<JSONBoard>(fileData);
+
+            // Unterstützt sowohl generator json files (dann wird emptyboard displayed) als auch manuell erzeugte JSONBoards
+            var isGeneratorJSON = fileData.Contains("EmptyBoard");
+            if (isGeneratorJSON)
+                this.jsonBoard = JsonConvert.DeserializeObject<GenerationResult>(fileData).EmptyBoard;
+            else
+                this.jsonBoard = JsonConvert.DeserializeObject<JSONBoard>(fileData);            
             file_label.Text = title;
 
             // Draw Board
