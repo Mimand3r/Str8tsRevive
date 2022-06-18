@@ -100,10 +100,15 @@ namespace Str8tsGenerator
                     // finde random Cell die noch nicht gefüllt ist. Dies wird die neue FillCell
                     var potential_new_cell_number = random.Next(newBoard.cells.Count);
 
+                    var potential_new_cell_is_block = newBoard.cells[potential_new_cell_number].type == "block";
+
                     // Es dürfen nie Zellen gewählt werden wenn dadurch eine Str8te komplett wäre
-                    var hor_strate_partners = solvingResult.UnsolvedBoard.horizontal_str8tes.Find(strate => strate.Cells.Select(cell => cell.index).ToList().Contains(potential_new_cell_number)).Cells.Where(cell => cell.index != potential_new_cell_number).ToList();
-                    var vert_strate_partners = solvingResult.UnsolvedBoard.vertical_str8tes.Find(strate => strate.Cells.Select(cell => cell.index).ToList().Contains(potential_new_cell_number)).Cells.Where(cell => cell.index != potential_new_cell_number).ToList();
-                    if (hor_strate_partners.All(cell => cell.isSolved) || vert_strate_partners.All(cell => cell.isSolved)) continue;
+                    if (!potential_new_cell_is_block)
+                    {
+                        var hor_strate_partners = solvingResult.UnsolvedBoard.horizontal_str8tes.Find(strate => strate.Cells.Select(cell => cell.index).ToList().Contains(potential_new_cell_number)).Cells.Where(cell => cell.index != potential_new_cell_number).ToList();
+                        var vert_strate_partners = solvingResult.UnsolvedBoard.vertical_str8tes.Find(strate => strate.Cells.Select(cell => cell.index).ToList().Contains(potential_new_cell_number)).Cells.Where(cell => cell.index != potential_new_cell_number).ToList();
+                        if (hor_strate_partners.All(cell => cell.isSolved) || vert_strate_partners.All(cell => cell.isSolved)) continue;
+                    }
 
                     // Gewählte Zelle muss noch den Wert 0 haben 
                     if (newBoard.cells[potential_new_cell_number].number > 0) continue;
@@ -159,11 +164,15 @@ namespace Str8tsGenerator
                 {
                     // Board is finished and fully generated
                     solvingResult = copy_solving_result;
-                    return new GenerationResult
+
+                    // nun soll ein Kürzungsprozess stattfinden
+                    var generationResult = new GenerationResult
                     {
                         EmptyBoard = newBoard,
                         Solution = solvingResult.SolvedBoard
                     };
+
+                    return KuerzeResult(generationResult);
                 }
                     
 
@@ -201,6 +210,34 @@ namespace Str8tsGenerator
             }
 
             return copy;
+        }
+
+        private static GenerationResult KuerzeResult(GenerationResult generationResult)
+        {
+            var filledCells = generationResult.EmptyBoard.cells.Where(x => x.number > 0).ToList();
+            var output = new GenerationResult
+            {
+                EmptyBoard = generationResult.EmptyBoard,
+                Solution = generationResult.Solution
+            };
+
+            foreach (var filledCell in filledCells)
+            {
+                // Prüfe ob die Cell nötig ist
+                var copy = MakeJSONBoardCopy(output.EmptyBoard);
+                var filledCellIndex = generationResult.EmptyBoard.cells.FindIndex(x => x == filledCell);
+                copy.cells[filledCellIndex].number = 0;
+                var copySolvingResult = MainSolver.SolveBoard(copy);
+                if (copySolvingResult.ResultType == ResultType.Success)
+                {
+                    // ist nicht nötig
+                    output.EmptyBoard = copy;
+                    output.Solution = copySolvingResult.SolvedBoard;
+                }
+            }
+
+
+            return output;
         }
     }
 }
