@@ -98,10 +98,22 @@ namespace Str8tsGenerator
                 while(new_cell_number == -1)
                 {
                     // finde random Cell die noch nicht gefüllt ist. Dies wird die neue FillCell
-                    var potential_new_cell_number = random.Next(newBoard.cells.Count);                
-                    if (newBoard.cells[potential_new_cell_number].number == 0 
-                        && solvingResult.UnsolvedBoard.Cells.Find(x => x.index == potential_new_cell_number).value == 0) // Manchmal ergeben sich die Values bereits logisch im SolvingErgebnis. Solche Zellen brauchen nicht gesetzt werden
-                        new_cell_number = potential_new_cell_number;
+                    var potential_new_cell_number = random.Next(newBoard.cells.Count);
+
+                    // Es dürfen nie Zellen gewählt werden wenn dadurch eine Str8te komplett wäre
+                    var hor_strate_partners = solvingResult.UnsolvedBoard.horizontal_str8tes.Find(strate => strate.Cells.Select(cell => cell.index).ToList().Contains(potential_new_cell_number)).Cells.Where(cell => cell.index != potential_new_cell_number).ToList();
+                    var vert_strate_partners = solvingResult.UnsolvedBoard.vertical_str8tes.Find(strate => strate.Cells.Select(cell => cell.index).ToList().Contains(potential_new_cell_number)).Cells.Where(cell => cell.index != potential_new_cell_number).ToList();
+                    if (hor_strate_partners.All(cell => cell.isSolved) || vert_strate_partners.All(cell => cell.isSolved)) continue;
+
+                    // Gewählte Zelle muss noch den Wert 0 haben 
+                    if (newBoard.cells[potential_new_cell_number].number > 0) continue;
+
+                    // Manchmal ergeben sich die Values bereits logisch im SolvingErgebnis.
+                    // In diesem Fall sind sie im Solving Ergebnis bereits als gefüllt markiert.
+                    // Solche Zellen brauchen nicht gesetzt werden
+                    if (solvingResult.UnsolvedBoard.Cells.Find(x => x.index == potential_new_cell_number).value > 0) continue;
+                    
+                    new_cell_number = potential_new_cell_number;
                 }
 
                 var cell_to_fill = newBoard.cells[new_cell_number];
