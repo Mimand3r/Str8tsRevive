@@ -111,6 +111,10 @@ namespace Str8tsGenerator
                     return isUnsolved && !isLastInStrate;
                 }).ToList();
 
+                // Manchmal kann die potential Cells List nur noch Blöcke enthalten. In so einem Fall ist das Board aufjedenfall ungültig (Gefahr für Dauerloop)
+                if (potential_cells.All(x => x.type == "block"))
+                    return GenerateLevel(size);
+
                 var cell_to_fill = potential_cells[random.Next(potential_cells.Count)];
                 var cell_is_block = cell_to_fill.type == "block";
                 var cell_index = newBoard.cells.FindIndex(x => x == cell_to_fill);
